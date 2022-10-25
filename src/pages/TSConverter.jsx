@@ -11,13 +11,15 @@ import {
   Form
 } from 'antd'
 import 'antd/dist/antd.css'; // or 'antd/dist/antd.less'
-import Icon, {CopyOutlined} from '@ant-design/icons';
+import Icon, {CopyOutlined, HomeOutlined} from '@ant-design/icons';
+import {Link} from "react-router-dom";
 
 
 function TSConverter() {
   const [dt, setDT] = useState(moment(parseInt(Date.now())).format('YYYY-MM-DD HH:mm:ss'))
   const [ts, setTS] = useState(parseInt(Date.now() / 1000))
   const [tsDefault, setTSDefault] = useState(parseInt(Date.now() / 1000))
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -50,22 +52,59 @@ function TSConverter() {
     setDT(dt)
   }
 
+  const copyToClipboard = (text) => {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+      document.execCommand('copy');
+    } catch (err) {
+      console.error('Unable to copy to clipboard', err);
+    }
+    document.body.removeChild(textArea);
+  }
+
+  const handleCopy = (text) => {
+    copyToClipboard(text)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
+  
+
   return (
     <div className="ts">
+      <br />
+      <Link to="/"><HomeOutlined  style={{ fontSize: 35, paddingLeft: 30}}/></Link>
       <Row>
-
-        
-
-        <Col span={6}
-          offset={9}>
+        <Col
+        span={6}
+        offset={9}>
 
           {/* <p style={}>Timestamp Converter</p> */}
+          
+          {/* {
+            copied
+            ?
+          <Alert type="success" hidden="true" closable="true" message="Copied" />
+            : null
+          } */}
 
-          <Alert message={
-            "CurrentTime: " + tsDefault + ' ' + (
-              moment(tsDefault * 1000).format('YYYY-MM-DD HH:mm:ss')
-            )
-          }/>
+          {/* <br /> */}
+          {
+            copied
+            ?
+            <Alert type="success" hidden="true" message="Copied" />
+            :
+            <Alert
+            type="info"
+            message={
+              "CurrentTime: " + tsDefault + '|' + (
+                moment(tsDefault * 1000).format('YYYY-MM-DD HH:mm:ss')
+              )
+            }/>
+          }
 
           <br />
 
@@ -79,7 +118,7 @@ function TSConverter() {
               addonAfter={
                 <CopyOutlined
               onClick=
-              {() => navigator.clipboard.writeText(ts)}/>
+              {() => handleCopy(ts)}/>
               }/>
           </Form.Item>
 
@@ -103,7 +142,7 @@ function TSConverter() {
               onChange={handleDatetimeChange}
               addonAfter={
                 <CopyOutlined
-                onClick={() => navigator.clipboard.writeText(dt)}/>
+                onClick={() => handleCopy(dt)}/>
               }
               // onClick={() => navigator.clipboard.writeText(dt)}
             />
